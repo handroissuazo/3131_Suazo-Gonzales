@@ -43,7 +43,7 @@ void Init (int M, int b)
 void Destroy ()
 {	// The destroy deletes theList from the head to tail
 	struct node* current;
-	while (theList.head != theList.tail)
+	while (theList.head->next != NULL)
 	{
 		current = theList.head;
 		theList.head = theList.head->next;
@@ -54,26 +54,55 @@ void Destroy ()
 	free(theList.head);
 }
 
-int Insert (int key,char *value_ptr, int value_len)
-{
-	struct node *newNode = (struct node*) malloc(value_len);
-	newNode->key = key;
-	newNode->value = value_ptr;
-	newNode->value_length = value_len;
-	newNode->next = NULL;
-
-	struct node *iterator = theList.head;
-	while(iterator->next != NULL)
-	{
-		iterator = iterator->next;
-	}
-
-	iterator->next = newNode;
-	// newNode->next = theList.tail;
-
+void printNode(struct node* nodePtr){
+	printf("\tThat node points to: %p\n", (void *)nodePtr);
+	printf("\tKey: %d, Value Length:%d, Value:%s\n",
+		nodePtr->key, nodePtr->value_length, nodePtr->value);
 }
 
-int 	Delete (int key){}
+int Insert (int key,char *value_ptr, int value_len)
+{
+
+	struct node *newNode = (struct node*)malloc(theList.blockSizeInBytes);
+	newNode->key = key;
+	newNode->value_length = value_len;
+	newNode->value = value_ptr;
+	int *nextPrt = theList.tail;
+	nextPrt += 2;
+	newNode->next = nextPrt;
+
+	if(theList.head == theList.tail)
+	{
+		memcpy(theList.head, newNode, theList.blockSizeInBytes);
+		printf("The head points to: %p\n", (void *)theList.head);
+
+		printNode(theList.head);
+	}
+	else
+	{
+		struct node *iterator = (struct node*)theList.head;
+		while ((struct node*)iterator->next != theList.tail) {
+			iterator = (struct node*)(iterator->next + theList.blockSizeInBytes + 1);
+		}
+
+		memcpy(iterator, newNode, theList.blockSizeInBytes);
+
+		printf("The head points to: %p, The iterator points to: %p, The newNode points to: %p\n",
+				(void *)theList.head, (void *)iterator, (void *)newNode);
+
+		printf("\tkey:%d\n", key);
+	}
+
+	theList.tail += theList.blockSizeInBytes + 1;
+
+
+	free(newNode);
+}
+
+int Delete (int key)
+{
+
+}
 
 char* 	Lookup (int key){return NULL;}
 

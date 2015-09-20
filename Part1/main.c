@@ -18,10 +18,11 @@ int main(int argc, char ** argv)
 	// some sample insertions
 	for (i=0; i< 10; i ++)
 	{
-		Insert (testnums [i], buf, 50);   // insert 50 bytes from the buffer as value for each of the insertions
+		Insert (testnums [i], msg, 50);   // insert 50 bytes from the buffer as value for each of the insertions
 	}
+	// PrintList ();
 	// Insert (150, buf, 200); // this Insert should fail
-	PrintList ();
+	// PrintList ();
 	// Delete (7);
 	// Insert (13, msg, strlen(msg)+1);		// insertion of strings, copies the null byte at the end
 	// Delete (55);
@@ -42,6 +43,6 @@ int main(int argc, char ** argv)
 
 
 	// end test operations
-	Destroy ();
+	// Destroy ();
 
 }
