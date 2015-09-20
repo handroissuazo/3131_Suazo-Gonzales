@@ -1,9 +1,40 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 int main(int argc, char ** argv) 
 {
+	int aflag = 0;
+	int bflag = 0;
+	char *cvalue = NULL;
+	int index;
+	int c;
+
+	opterr = 0;
+	while ((c = getopt (argc, argv, "bs:")) != -1)
+	switch (c)
+	{
+	  case 'b':
+		  cvalue = optarg;
+		  break;
+	  case 's':
+		  cvalue = optarg;
+		  break;
+	  case '?':
+		if (optopt == 'c')
+		  fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+		else if (isprint (optopt))
+		  fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+		else
+		  fprintf (stderr,
+				   "Unknown option character `\\x%x'.\n",
+				   optopt);
+		return 1;
+	  default:
+		abort ();
+	}
+
 	int b = 128;
 	int M = b * 11;  // so we have space for 11 items
 	
@@ -41,7 +72,7 @@ int main(int argc, char ** argv)
 	if (kv)
 		printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), kv + 8);
 	
-	
+
 	// end test operations	
 	Destroy ();
 	

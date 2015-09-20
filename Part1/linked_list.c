@@ -133,85 +133,115 @@ void PrintEmptytSpaceList()
 typedef struct node
 {	//This will hold our key, value, next node, and value_length (to know how much space to allocate and deallocate for some dynamic memory allocation! Yessss... )
 	int key;
-	char* value;
+	char *value;
 	int value_length;
 	struct node *next;
 } node;
 
 typedef struct singlyLinkedList
 {
-	node *head;
-	node *tail;
+	struct node *head;
+	struct node *tail;
 	int blockSizeInBytes;
 } singlyLinkedList;
 
-//Global Variables... I know... We don't have classes here so it's a bit tricky. 
-singlyLinkedList s_theList;
-
+//Global Variables... I know... We don't have classes here so it's a bit tricky.
+singlyLinkedList theList;
 
 void Init (int M, int b)
 {
-	//Setup the EmptySpaceQueue for custom DMA
-	s_emptySpaceq.EmptySpaceList = (EmptySpaceObject*) malloc(M/b * sizeof(EmptySpaceObject));
-	s_emptySpaceq.allocatedSpace = M;
-	s_emptySpaceq.QueueSize = 0;
-	s_emptySpaceq.usedSpace = 0;
-
 	// Make the head node. FYI, malloc allocates a memory block of size m and returns a pointer to the start of the alloocated block!
-	s_theList.head = (node *) malloc(M);
-	s_theList.head->next = 0;
+	theList.head = (struct node*) malloc(M);
+	theList.head->next = NULL;
 
 	// Make the tail node
-	s_theList.tail = s_theList.head;
+	theList.tail = theList.head;
 
 	// Set the default byte size
-	if (b == NULL || b == 0)
+	if (!b || b == 0)
 	{
 		// Set default to 128 bytes
-		s_theList.blockSizeInBytes = 128;
+		theList.blockSizeInBytes = 128;
 	}
 	else
-	{	
+	{
 		// If given, set blockSize to b
-		s_theList.blockSizeInBytes = b;
+		theList.blockSizeInBytes = b;
 	}
-
-	for (int i = 0; i < 10000; ++i)
-	{
-		InsertIntoEmptySpaceQueue(i*128, 128);
-	}
-
-	PrintEmptytSpaceList();
-
-	for (int i = 0; i < 9999; ++i)
-	{
-		GetFirstAvailableSpace(128);
-	}
-
-	PrintEmptytSpaceList();
 }
 
 void Destroy ()
-{	// The destroy deletes s_theList from the head to tail
-	node* current;
-	while (s_theList.head != s_theList.tail)
-	{	
-		current = s_theList.head;
-		s_theList.head = s_theList.head->next;
+{	// The destroy deletes theList from the head to tail
+	struct node* current;
+	while (theList.head->next != NULL)
+	{
+		current = theList.head;
+		theList.head = theList.head->next;
 		free(current);
 	}
 
-	// This deletes the last node of the list after s_theList.head == s_theList.tail
-	free(s_theList.head);
-
-	DestroyEmptySpaceList();
+	// This deletes the last node of the list after theList.head == theList.tail
+	free(theList.head);
 }
 
-int Insert (int key,char * value_ptr, int value_len)
+void printNode(struct node* nodePtr){
+	printf("\tThat node points to: %p\n", (void *)nodePtr);
+	printf("\tKey: %d, Value Length:%d, Value:%s\n",
+		nodePtr->key, nodePtr->value_length, nodePtr->value);
+}
+
+int Insert (int key,char *value_ptr, int value_len)
 {
-		
+	struct node *newNode = (struct node*)malloc(theList.blockSizeInBytes);
+	newNode->key = key;
+	newNode->value_length = value_len;
+	newNode->value = value_ptr;
+	int *nextPrt = theList.tail;
+	nextPrt += theList.blockSizeInBytes/ sizeof(int);
+	newNode->next = nextPrt;
+
+	if(theList.head == theList.tail)
+	{
+		memcpy(theList.head, newNode, theList.blockSizeInBytes);
+		printf("The head points to: %p\n", (void *)theList.head);
+
+		printNode(theList.head);
+	}
+	else
+	{
+		memcpy(theList.tail, newNode, theList.blockSizeInBytes);
+
+		printf("The head points to: %p, The iterator points to: %p, The newNode points to: %p\n",
+				(void *)theList.head, (void *)iterator, (void *)newNode);
+
+		printf("\tkey:%d\n", key);
+	}
+
+	theList.tail += 128/sizeof(struct node);
+
+
+	free(newNode);
 }
 
-int 	Delete (int key){}
+int Delete (int key)
+{
+
+}
+
 char* 	Lookup (int key){return NULL;}
-void 	PrintList (){}
+
+void 	PrintList ()
+{
+	struct node *iterator = theList.head;
+
+	//loop through all the nodes in a list except for the last
+	//node because it's next property should be null
+	//TODO: Add a is_list_empty check for this stuff
+	while (iterator->next != NULL)
+	{
+		printf("\tKey: %d, Value: %s\n", iterator->key, iterator->value);
+		iterator = iterator->next;// + iterator->value_length;
+	}
+
+	printf("\tKey: %d, Value: %s\n", iterator->key, iterator->value);
+}
