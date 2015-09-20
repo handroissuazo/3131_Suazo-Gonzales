@@ -150,24 +150,37 @@ singlyLinkedList theList;
 
 void Init (int M, int b)
 {
-	// Make the head node. FYI, malloc allocates a memory block of size m and returns a pointer to the start of the alloocated block!
-	theList.head = (struct node*) malloc(M);
+	int allocationSize = M;
+	// Set the default byte size
+		if (!b || b < 32)
+		{
+			// Set default to 128 bytes
+			theList.blockSizeInBytes = 128;
+			printf("We changed your block size to %d because \n you need more than 32 bytes for each node.\n", theList.blockSizeInBytes);
+		}
+		else
+		{
+			// If given, set blockSize to b
+			theList.blockSizeInBytes = b;
+		}
+
+	// Set the default byte size
+		if (!M || M < theList.blockSizeInBytes*11)
+		{
+			// Hey we need to have enough space for 11 nodes.
+			// Set default to 128 bytes
+			allocationSize = theList.blockSizeInBytes*11;
+			printf("We changed your allocation size to %d because \n we deem you need more room to fit items.\n", allocationSize);
+		}
+
+	// Make the head node. FYI, malloc allocates a memory block of size m and returns a pointer to the start of the allocated block!
+	theList.head = (struct node*) malloc(allocationSize);
 	theList.head->next = NULL;
 
 	// Make the tail node
 	theList.tail = theList.head;
 
-	// Set the default byte size
-	if (!b || b == 0)
-	{
-		// Set default to 128 bytes
-		theList.blockSizeInBytes = 128;
-	}
-	else
-	{
-		// If given, set blockSize to b
-		theList.blockSizeInBytes = b;
-	}
+
 }
 
 void Destroy ()
@@ -211,13 +224,13 @@ int Insert (int key,char *value_ptr, int value_len)
 	{
 		memcpy(theList.tail, newNode, theList.blockSizeInBytes);
 
-		printf("The head points to: %p, The iterator points to: %p, The newNode points to: %p\n",
-				(void *)theList.head, (void *)iterator, (void *)newNode);
+		/*printf("The head points to: %p, The iterator points to: %p, The newNode points to: %p\n",
+				(void *)theList.head, (void *)iterator, (void *)newNode);*/
 
 		printf("\tkey:%d\n", key);
 	}
 
-	theList.tail += 128/sizeof(struct node);
+	theList.tail += theList.blockSizeInBytes/sizeof(struct node);
 
 
 	free(newNode);

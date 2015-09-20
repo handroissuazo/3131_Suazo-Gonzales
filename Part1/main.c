@@ -5,38 +5,36 @@
 
 int main(int argc, char ** argv) 
 {
-	int aflag = 0;
-	int bflag = 0;
-	char *cvalue = NULL;
-	int index;
+	int b = 0;
+	int M = 0;
 	int c;
 
 	opterr = 0;
-	while ((c = getopt (argc, argv, "bs:")) != -1)
-	switch (c)
+	while ((c = getopt (argc, argv, "b:s:")) != -1)
 	{
-	  case 'b':
-		  cvalue = optarg;
-		  break;
-	  case 's':
-		  cvalue = optarg;
-		  break;
-	  case '?':
-		if (optopt == 'c')
-		  fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-		else if (isprint (optopt))
-		  fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-		else
-		  fprintf (stderr,
-				   "Unknown option character `\\x%x'.\n",
-				   optopt);
-		return 1;
-	  default:
-		abort ();
+		switch (c)
+		{
+		  case 'b':
+			  b = atoi(optarg);
+			  break;
+		  case 's':
+			  M = atoi(optarg);
+			  break;
+		  case '?':
+			if (optopt == 'b' || optopt == 's')
+			  fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+			else if (isprint (optopt))
+			  fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+			else
+			  fprintf (stderr, "Unknown option character `\\x%x'.\n",  optopt);
+			return 1;
+		  default:
+			abort ();
+		}
 	}
 
-	int b = 128;
-	int M = b * 11;  // so we have space for 11 items
+	/*b = 128;
+	M = b * 11;  // so we have space for 11 items*/
 	
 	char buf [1024];
 	memset (buf, 1, 1024);		// set each byte to 1
@@ -45,7 +43,7 @@ int main(int argc, char ** argv)
 	
 	Init (M,b); // initialize
 	// test operations
-	int testnums [] = {100, 5, 200, 7, 39, 25, 400, 50, 200, 300};
+	/*int testnums [] = {100, 5, 200, 7, 39, 25, 400, 50, 200, 300};
 	int i = 0;
 	// some sample insertions
 	for (i=0; i< 10; i ++)
@@ -71,7 +69,7 @@ int main(int argc, char ** argv)
 	kv = Lookup (13);
 	if (kv)
 		printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), kv + 8);
-	
+	*/
 
 	// end test operations	
 	Destroy ();
