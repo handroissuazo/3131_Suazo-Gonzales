@@ -111,10 +111,10 @@ int GetFirstAvailableSpace(int SizeOfSpaceRequired)
 
 	//In the future, this will need to account for remaining space (Since all of the items will be a fixed block size, this isn't necessary at this stage)
 
-	return bytesFromHeader; //If no available space is found, the function returns -1. 
+	return bytesFromHeader; //If no available space is found, the function returns -1.
 }
 
-void DestroyEmptySpaceList() 
+void DestroyEmptySpaceList()
 {
 	free(s_emptySpaceq.EmptySpaceList);
 }
@@ -129,7 +129,7 @@ void PrintEmptytSpaceList()
 	printf("\n");
 }
 
-// Linked List 
+// Linked List
 typedef struct node
 {	//This will hold our key, value, next node, and value_length (to know how much space to allocate and deallocate for some dynamic memory allocation! Yessss... )
 	int key;
@@ -209,25 +209,15 @@ int Insert (int key,char *value_ptr, int value_len)
 	newNode->key = key;
 	newNode->value_length = value_len;
 	newNode->value = value_ptr;
-	int *nextPrt = theList.tail;
-	nextPrt += theList.blockSizeInBytes/ sizeof(int);
-	newNode->next = nextPrt;
+	newNode->next = theList.tail + theList.blockSizeInBytes/ sizeof(struct node);
 
 	if(theList.head == theList.tail)
 	{
 		memcpy(theList.head, newNode, theList.blockSizeInBytes);
-		printf("The head points to: %p\n", (void *)theList.head);
-
-		printNode(theList.head);
 	}
 	else
 	{
 		memcpy(theList.tail, newNode, theList.blockSizeInBytes);
-
-		/*printf("The head points to: %p, The iterator points to: %p, The newNode points to: %p\n",
-				(void *)theList.head, (void *)iterator, (void *)newNode);*/
-
-		printf("\tkey:%d\n", key);
 	}
 
 	theList.tail += theList.blockSizeInBytes/sizeof(struct node);
