@@ -181,7 +181,7 @@ int SingleListInsert (int key, char *value_ptr, int value_len, singlyLinkedList*
 {
 	if(key < 0)
 	{
-		printf("\nInvalid key: %d\n", key);
+		printf("\nInvalid key: %d\nPlease Insert only positive integers!\n\n", key);
 		return 1;
 	}
 
@@ -189,7 +189,6 @@ int SingleListInsert (int key, char *value_ptr, int value_len, singlyLinkedList*
 	newNode.key = key;
 	newNode.value_length = value_len;
 	newNode.value = value_ptr;
-	printf("\n%p--%d\n", theList->tail, theList->blockSizeInBytes);
 	newNode.next = NULL;
 
 	struct node *endOfPool = theList->head + (theList->memAllocInBytes/sizeof(struct node));
@@ -273,7 +272,7 @@ char* 	SingleListLookup (int key, singlyLinkedList theList)
 	if(isNodeFound)
 	{
 		char* kv = &(current->key);
-		printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), current->value);
+		printf ("Key = %d, Value Len = %d", *(int *) kv, *(int *) (kv+4));
 		return kv;
 	}
 	return value;
@@ -359,7 +358,12 @@ void Init (int M, int b, int t) // initializes the linked list, should be called
 
 void Destroy () // destroys the linked list and cleans resources
 {
-
+	int listPosition = 0;
+	for (int i = 1; i < MasterList.numberOfTiers; ++i)
+	{
+		SingleListDestroy(*(MasterList.ListPtr[listPosition]));
+		++listPosition;
+	}
 }
 
 int Insert (int key,char * value_ptr, int value_len) // inserts the key and copies the value to the payload
@@ -390,6 +394,8 @@ int Delete (int key) // delete the whole block containing that particular key. W
 		}
 		else ++listPosition;
 	}
+
+	return SingleListDelete(key, *(MasterList.ListPtr[listPosition]));
 }
 
 char* Lookup (int key) // Looks up the first item with the given and returns a pointer to the value portion (the value length and the actual value)
@@ -403,6 +409,8 @@ char* Lookup (int key) // Looks up the first item with the given and returns a p
 		}
 		else ++listPosition;
 	}
+
+	return SingleListLookup (key, *(MasterList.ListPtr[listPosition]));
 }
 			    //(the user can read or modify after obtaining the pointer)
 
@@ -411,12 +419,8 @@ void PrintList () // prints the entire list by following the next pointers. Prin
 	int listPosition = 0;
 	for (int i = 1; i < MasterList.numberOfTiers; ++i)
 	{
-		if (key < MasterList.Range * i + 1)
-		{
-			break;
-		}
-		else ++listPosition;
-
+		printf("\nPrinting Tier: %d \n", listPosition + 1);
 		PrintSingleList(*(MasterList.ListPtr[listPosition]));
+		++listPosition;
 	}
 }

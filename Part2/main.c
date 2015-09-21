@@ -23,9 +23,10 @@ int main(int argc, char ** argv) {
 		Insert (testnums [i], buf, 50); // insert 50 bytes from the buffer as value for each of the insertions
 	}
 
+	PrintList ();
+	//Lookup(50);
+	//Delete(50);
 	//PrintList ();
-		
 	// end test operations
 	Destroy ();
-	
 }
