@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 #include "linked_list.h"
 
 //Empty Space Priority Queue Used for memory management
@@ -143,6 +144,7 @@ typedef struct singlyLinkedList
 	struct node *head;
 	struct node *tail;
 	int blockSizeInBytes;
+	int memAllocInBytes;
 } singlyLinkedList;
 
 //Global Variables... I know... We don't have classes here so it's a bit tricky.
@@ -150,9 +152,9 @@ singlyLinkedList theList;
 
 void Init (int M, int b)
 {
-	int allocationSize = M;
+	theList.memAllocInBytes = M;
 	// Set the default byte size
-		if (!b || b < 32)
+		if (!b || b < 36)
 		{
 			// Set default to 128 bytes
 			theList.blockSizeInBytes = 128;
@@ -165,16 +167,15 @@ void Init (int M, int b)
 		}
 
 	// Set the default byte size
-		if (!M || M < theList.blockSizeInBytes*11)
+		if (!M || M < 512000)
 		{
 			// Hey we need to have enough space for 11 nodes.
-			// Set default to 128 bytes
-			allocationSize = theList.blockSizeInBytes*11;
-			printf("We changed your allocation size to %d because \n we deem you need more room to fit items.\n", allocationSize);
+			theList.memAllocInBytes = 512000;
+			printf("We changed your allocation size to %d because \n we deem you need more room to fit items.\n", theList.memAllocInBytes);
 		}
 
 	// Make the head node. FYI, malloc allocates a memory block of size m and returns a pointer to the start of the allocated block!
-	theList.head = (struct node*) malloc(allocationSize);
+	theList.head = (struct node*) malloc(theList.memAllocInBytes);
 	theList.head->next = NULL;
 
 	// Make the tail node
@@ -185,16 +186,17 @@ void Init (int M, int b)
 
 void Destroy ()
 {	// The destroy deletes theList from the head to tail
-	struct node* current;
-	while (theList.head->next != NULL)
+	struct node* current = theList.head;
+	struct node* next;
+	while (current != NULL)
 	{
-		current = theList.head;
-		theList.head = theList.head->next;
-		free(current);
+		next = current->next;
+		current = NULL;
+		current = next;
 	}
 
 	// This deletes the last node of the list after theList.head == theList.tail
-	free(theList.head);
+	  theList.head = NULL;
 }
 
 void printNode(struct node* nodePtr){
@@ -205,33 +207,114 @@ void printNode(struct node* nodePtr){
 
 int Insert (int key,char *value_ptr, int value_len)
 {
-	struct node *newNode = (struct node*)malloc(theList.blockSizeInBytes);
-	newNode->key = key;
-	newNode->value_length = value_len;
-	newNode->value = value_ptr;
-	newNode->next = theList.tail + theList.blockSizeInBytes/ sizeof(struct node);
+	struct node newNode;
+	newNode.key = key;
+	newNode.value_length = value_len;
+	newNode.value = value_ptr;
+	newNode.next = theList.tail + theList.blockSizeInBytes/ sizeof(struct node);
+
+	struct node *endOfPool = theList.head + (theList.memAllocInBytes/sizeof(struct node));
+	if(newNode.next >= endOfPool)
+	{
+		printf("You did not allocate enough memory to insert more items. \nRun the program again with a larger memsize.\n");
+		return 1;
+	}
 
 	if(theList.head == theList.tail)
 	{
-		memcpy(theList.head, newNode, theList.blockSizeInBytes);
+		memcpy(theList.head, &newNode, theList.blockSizeInBytes);
 	}
 	else
 	{
-		memcpy(theList.tail, newNode, theList.blockSizeInBytes);
+		memcpy(theList.tail, &newNode, theList.blockSizeInBytes);
 	}
 
 	theList.tail += theList.blockSizeInBytes/sizeof(struct node);
-
-
-	free(newNode);
+	theList.tail->key = 0;
+	theList.tail->next = NULL;
+	theList.tail->value = NULL;
+	theList.tail->value_length = 0;
 }
 
 int Delete (int key)
 {
+	struct node* current;
+	struct node* previous;
+	bool isNodeFound = false;
+	bool isNodeDeleted = false;
+	current = theList.head;
 
+	while (current != theList.tail)
+	{
+		if (key == current->key)
+		{
+			isNodeFound = true;
+			break;
+		}
+		previous = current;
+		current = current->next;
+	}
+
+	if(isNodeFound)
+	{
+		previous->next = current->next;
+		InsertIntoEmptySpaceQueue(theList.head - current, theList.blockSizeInBytes);
+		isNodeDeleted = true;
+	}
+	else if (!isNodeDeleted)
+	{
+		printf("Node of key %d not found. Try again with a key that actually exists!\n", key);
+	}
+
+	return isNodeDeleted;
 }
 
-char* 	Lookup (int key){return NULL;}
+char* 	Lookup (int key)
+{
+	struct node* current;
+	current = theList.head;
+	bool isNodeFound = false;
+
+	while (current != theList.tail)
+	{
+		if (key == current->key)
+		{
+			isNodeFound = true;
+			break;
+		}
+
+		current = current->next;
+	}
+
+	char* value = NULL;
+	if(isNodeFound)
+	{
+		char keyString[4] = "0000";
+		char keyPart[4];
+		int digits = (current->key == 0 ? 1 : (int)(log10(current->key)+1));
+		int count = 0;
+		sprintf(keyPart, "%d", current->key);
+		for (int i = 3; i > digits - 1; ++i)
+		{
+			keyString[i] = keyPart[digits - count];
+			++count;
+		}
+
+		strcat(keyString, keyPart);
+
+		char info[256];
+		char value_length[4];
+
+		sprintf(value_length, "%d", current->value_length);
+
+		strcpy(info, key);
+		strcat(info, value_length);
+		strcat(info, current->value);
+		value = info;
+	}
+
+	return value;
+}
 
 void 	PrintList ()
 {
@@ -240,11 +323,12 @@ void 	PrintList ()
 	//loop through all the nodes in a list except for the last
 	//node because it's next property should be null
 	//TODO: Add a is_list_empty check for this stuff
-	while (iterator->next != NULL)
+	while (iterator->next != theList.tail)
 	{
 		printf("\tKey: %d, Value: %s\n", iterator->key, iterator->value);
 		iterator = iterator->next;// + iterator->value_length;
 	}
 
 	printf("\tKey: %d, Value: %s\n", iterator->key, iterator->value);
+	printf("-----------------------\n");
 }

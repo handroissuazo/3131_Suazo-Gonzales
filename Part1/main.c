@@ -45,16 +45,20 @@ int main(int argc, char ** argv)
 	// some sample insertions
 	for (i=0; i< 10; i ++)
 	{
-		Insert (testnums [i], msg, 50);   // insert 50 bytes from the buffer as value for each of the insertions
+		Insert (testnums [i], msg, strlen(msg));   // insert 50 bytes from the buffer as value for each of the insertions
 	}
 	//Insert (150, buf, 200); // this Insert should fail
 	PrintList ();
 	Delete (7);
+	PrintList ();
 	Insert (13, msg, strlen(msg)+1);		// insertion of strings, copies the null byte at the end
+	PrintList ();
 	Delete (55);
+	PrintList ();
 	Insert (15, "test msg", 8);
+	PrintList ();
 	Delete (3);
-	//PrintList ();
+	PrintList ();
 
 	// a sample lookup operations that should return null, because it is looking up a non-existent number
 	char* kv = Lookup (3);
