@@ -1,4 +1,8 @@
-#include <stdlib.h> include <string.h> include <string.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string.h>
+#include "linked_list2.h"
+
 int main(int argc, char ** argv) {
 	int b = 128;
 	int M = b * 4; // so we have space for 4 items in each of the lists
@@ -18,7 +22,8 @@ int main(int argc, char ** argv) {
 	{
 		Insert (testnums [i], buf, 50); // insert 50 bytes from the buffer as value for each of the insertions
 	}
-	PrintList ();
+
+	//PrintList ();
 		
 	// end test operations
 	Destroy ();
