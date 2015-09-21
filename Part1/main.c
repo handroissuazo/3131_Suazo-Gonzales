@@ -58,18 +58,15 @@ int main(int argc, char ** argv)
 	Insert (15, "test msg", 8);
 	PrintList ();
 	Delete (3);
-	PrintList ();
+	//PrintList ();
 
 	// a sample lookup operations that should return null, because it is looking up a non-existent number
-	char* kv = Lookup (3);
-	if (kv)
-		printf ("Key = %d, Value Len = %d\n", *(int *) kv, *(int *) (kv+4));
+	Lookup (3);
 
 
 	// this look up  should succeed and print the string "a sample message"
-	kv = Lookup (13);
-	if (kv)
-		printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), kv + 8);
+	Lookup (13);
+
 
 
 	// end test operations

@@ -133,10 +133,10 @@ void PrintEmptytSpaceList()
 // Linked List
 typedef struct node
 {	//This will hold our key, value, next node, and value_length (to know how much space to allocate and deallocate for some dynamic memory allocation! Yessss... )
-	int key;
-	char *value;
-	int value_length;
 	struct node *next;
+	int key;
+	int value_length;
+	char *value;
 } node;
 
 typedef struct singlyLinkedList
@@ -289,30 +289,10 @@ char* 	Lookup (int key)
 	char* value = NULL;
 	if(isNodeFound)
 	{
-		char keyString[4] = "0000";
-		char keyPart[4];
-		int digits = (current->key == 0 ? 1 : (int)(log10(current->key)+1));
-		int count = 0;
-		sprintf(keyPart, "%d", current->key);
-		for (int i = 3; i > digits - 1; ++i)
-		{
-			keyString[i] = keyPart[digits - count];
-			++count;
-		}
-
-		strcat(keyString, keyPart);
-
-		char info[256];
-		char value_length[4];
-
-		sprintf(value_length, "%d", current->value_length);
-
-		strcpy(info, key);
-		strcat(info, value_length);
-		strcat(info, current->value);
-		value = info;
+		char* kv = &(current->key);
+		printf ("Key = %d, Value Len = %d, Value = %s\n", *(int *) kv, *(int *) (kv+4), current->value);
+		return kv;
 	}
-
 	return value;
 }
 
